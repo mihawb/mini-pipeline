@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocNet Console</title>
+    <script src="https://unpkg.com/htmx.org@2.0.0"></script>
+</head>
+<body>
+    <h1>Social Network Mock-up Console</h1>
+    
+    <div>
+        <label for="epm-slider">Events per minute: </label>
+        <span id="epm-display">0</span>
+        <input type="range" id="epm-slider" name="epm" min="0" max="100" value="0" 
+               hx-post="/update-epm" 
+               hx-trigger="input changed delay:300ms"
+               hx-target="#epm-display"
+               hx-swap="innerHTML"
+               hx-include="#epm-slider">
+    </div>
+</body>
+</html>
