@@ -2,7 +2,7 @@ name: mini-pipeline
 
 services:
   postgres:
-    image: postgres:18
+    image: postgres:18-alpine
     container_name: postgres
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -13,6 +13,14 @@ services:
     volumes:
       - ./postgres-init:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
   socnet-stub:
     build:
@@ -20,7 +28,8 @@ services:
       dockerfile: Containerfile
     container_name: socnet-stub
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
@@ -31,7 +40,7 @@ services:
       - "8000:8000"
 
   kafka:
-    image: apache/kafka:latest
+    image: apache/kafka:4.4.0
     container_name: kafka
     restart: unless-stopped
     ports:
@@ -58,10 +67,11 @@ services:
     healthcheck:
       test:
         - "CMD-SHELL"
-        - "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"
+        - "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"
       interval: 10s
       timeout: 5s
-      retries: 8
+      retries: 10
+      start_period: 20s
 
 volumes:
   postgres_data:

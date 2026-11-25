@@ -19,6 +19,7 @@ class Base(DeclarativeBase):
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = {"schema": "entities"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     username: Mapped[str] = mapped_column(String(50), unique=True)
@@ -34,9 +35,12 @@ class User(Base):
 
 class Post(Base):
     __tablename__ = "posts"
+    __table_args__ = {"schema": "entities"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("entities.users.id", ondelete="CASCADE")
+    )
     content: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
@@ -45,44 +49,51 @@ class Post(Base):
 
 class Follow(Base):
     __tablename__ = "follows"
-    __table_args__ = (UniqueConstraint("follower_id", "following_id"),)
+    __table_args__ = (
+        UniqueConstraint("follower_id", "following_id"),
+        {"schema": "activity"},
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     follower_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE")
+        ForeignKey("entities.users.id", ondelete="CASCADE")
     )
     following_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE")
+        ForeignKey("entities.users.id", ondelete="CASCADE")
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
 
 class Like(Base):
     __tablename__ = "likes"
-    __table_args__ = (UniqueConstraint("user_id", "post_id"),)
+    __table_args__ = (
+        UniqueConstraint("user_id", "post_id"),
+        {"schema": "activity"},
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE")
+        ForeignKey("entities.users.id", ondelete="CASCADE")
     )
     post_id: Mapped[int | None] = mapped_column(
-        ForeignKey("posts.id", ondelete="CASCADE")
+        ForeignKey("entities.posts.id", ondelete="CASCADE")
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
 
 class Comment(Base):
     __tablename__ = "comments"
+    __table_args__ = {"schema": "entities"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE")
+        ForeignKey("entities.users.id", ondelete="CASCADE")
     )
     post_id: Mapped[int | None] = mapped_column(
-        ForeignKey("posts.id", ondelete="CASCADE")
+        ForeignKey("entities.posts.id", ondelete="CASCADE")
     )
     parent_comment_id: Mapped[int | None] = mapped_column(
-        ForeignKey("comments.id", ondelete="CASCADE")
+        ForeignKey("entities.comments.id", ondelete="CASCADE")
     )
     content: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

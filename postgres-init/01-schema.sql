@@ -1,4 +1,7 @@
-CREATE TABLE users (
+CREATE SCHEMA IF NOT EXISTS entities;
+CREATE SCHEMA IF NOT EXISTS activity;
+
+CREATE TABLE entities.users (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -11,36 +14,36 @@ CREATE TABLE users (
     is_active BOOLEAN DEFAULT TRUE
 );
 
-CREATE TABLE posts (
+CREATE TABLE entities.posts (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES entities.users(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_deleted BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE follows (
+CREATE TABLE activity.follows (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    follower_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    following_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    follower_id INTEGER REFERENCES entities.users(id) ON DELETE CASCADE,
+    following_id INTEGER REFERENCES entities.users(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(follower_id, following_id)
 );
 
-CREATE TABLE likes (
+CREATE TABLE activity.likes (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES entities.users(id) ON DELETE CASCADE,
+    post_id INTEGER REFERENCES entities.posts(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, post_id)
 );
 
-CREATE TABLE comments (
+CREATE TABLE entities.comments (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
-    parent_comment_id INTEGER REFERENCES comments(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES entities.users(id) ON DELETE CASCADE,
+    post_id INTEGER REFERENCES entities.posts(id) ON DELETE CASCADE,
+    parent_comment_id INTEGER REFERENCES entities.comments(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
