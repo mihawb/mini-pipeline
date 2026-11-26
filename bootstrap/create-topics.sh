@@ -1,23 +1,8 @@
-#!/bin/bash
-set -euo pipefail
+#!/bin/sh
+set -eu
 
-KAFKA_BOOTSTRAP_SERVER="kafka:29092"
-KAFKA_TOPICS=""
-
-for kafka_topics_candidate in \
-  "/kafka/bin/kafka-topics.sh" \
-  "/opt/kafka/bin/kafka-topics.sh"
-do
-  if [ -x "$kafka_topics_candidate" ]; then
-    KAFKA_TOPICS="$kafka_topics_candidate"
-    break
-  fi
-done
-
-if [ -z "$KAFKA_TOPICS" ]; then
-  echo "Kafka topics CLI was not found in the bootstrap image" >&2
-  exit 1
-fi
+KAFKA_BOOTSTRAP_SERVER="localhost:29092"
+KAFKA_TOPICS="/opt/kafka/bin/kafka-topics.sh"
 
 echo "Waiting for Kafka..."
 until "$KAFKA_TOPICS" \

@@ -1,0 +1,22 @@
+{
+  "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+  "tasks.max": "1",
+
+  "database.hostname": "postgres",
+  "database.port": "5432",
+  "database.user": "${env:POSTGRES_USER}",
+  "database.password": "${env:POSTGRES_PASSWORD}",
+  "database.dbname": "${env:POSTGRES_DB}",
+
+  "plugin.name": "pgoutput",
+  "topic.prefix": "socnet",
+  "slot.name": "pg_social_network",
+  "publication.autocreate.mode": "filtered",
+
+  "schema.include.list": "entities,activity",
+  "table.include.list": "entities.users,entities.posts,activity.follows,activity.likes,entities.comments",
+
+  "tombstones.on.delete": "false",
+  "heartbeat.interval.ms": "3000",
+  "poll.interval.ms": "1000"
+}
