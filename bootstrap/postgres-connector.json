@@ -14,7 +14,7 @@
   "publication.autocreate.mode": "filtered",
 
   "schema.include.list": "entities,activity",
-  "table.include.list": "entities.users,entities.posts,activity.follows,activity.likes,entities.comments",
+  "table.include.list": "entities.users,entities.posts,activity.follows,activity.ratings,entities.comments",
 
   "tombstones.on.delete": "false",
   "heartbeat.interval.ms": "3000",

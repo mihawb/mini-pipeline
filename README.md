@@ -8,7 +8,7 @@ Delta format.
 ## Social Network stub and data pipeline
 
 The Social Network stub simulates a social media platform by continuously generating
-business events for users, posts, follows, likes, and comments. It inserts these
+business events for users, posts, follows, ratings, and comments. It inserts these
 records into PostgreSQL at a configurable rate, while respecting relationships
 between users and posts. A FastAPI control endpoint allows the event rate to be
 changed at runtime or paused.

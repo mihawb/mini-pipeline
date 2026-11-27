@@ -35,5 +35,5 @@ create_topic "connect-status" 5 compact
 create_topic "socnet.entities.users" 1
 create_topic "socnet.entities.posts" 1
 create_topic "socnet.activity.follows" 1
-create_topic "socnet.activity.likes" 1
+create_topic "socnet.activity.ratings" 1
 create_topic "socnet.entities.comments" 1

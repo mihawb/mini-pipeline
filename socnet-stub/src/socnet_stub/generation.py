@@ -1,4 +1,4 @@
-from .entities import Base, User, Post, Follow, Like, Comment
+from .entities import Base, User, Post, Follow, Rating, Comment
 
 from sqlalchemy import Engine, func, select
 from sqlalchemy.orm import Session
@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 import logging
 import secrets
-from random import choices, choice
+from random import choices, choice, randint
 from collections.abc import Callable
 
 logging.basicConfig(level=logging.INFO)
@@ -52,16 +52,16 @@ def generate_random_follow(engine: Engine) -> Follow | None:
     return Follow(follower_id=user_pair[0], following_id=user_pair[1])
 
 
-def generate_random_like(engine: Engine) -> Like | None:
+def generate_random_rating(engine: Engine) -> Rating | None:
     with Session(engine) as session:
         user_id = session.scalar(select(User.id).order_by(func.random()).limit(1))
         post_id = session.scalar(select(Post.id).order_by(func.random()).limit(1))
 
     if user_id is None or post_id is None:
-        logger.warning("Could not generate a like with no users nor posts")
+        logger.warning("Could not generate a rating with no users nor posts")
         return None
 
-    return Like(user_id=user_id, post_id=post_id)
+    return Rating(user_id=user_id, post_id=post_id, rating=randint(1, 6))
 
 
 def generate_random_comment(engine: Engine) -> Comment | None:
@@ -94,7 +94,7 @@ __generator_weights = [
     (generate_random_user, 50),
     (generate_random_post, 50),
     (generate_random_follow, 50),
-    (generate_random_like, 50),
+    (generate_random_rating, 50),
     (generate_random_comment, 50),
 ]
 
