@@ -32,6 +32,8 @@ create_topic "connect-configs" 1 compact
 create_topic "connect-offsets" 25 compact
 create_topic "connect-status" 5 compact
 
+create_topic "__debezium-heartbeat.socnet" 1 compact
+
 create_topic "socnet.entities.users" 1
 create_topic "socnet.entities.posts" 1
 create_topic "socnet.activity.follows" 1
