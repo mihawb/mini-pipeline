@@ -46,7 +46,7 @@ class EventGenerator:
                 self.rate_changed.clear()
 
     def update_rate(self, requested_epm: int) -> int:
-        self.events_per_minute = max(0, min(requested_epm, 100))
+        self.events_per_minute = max(0, min(requested_epm, 1000))
         self.rate_changed.set()
         logger.info(
             "Event generation speed updated to %s events/min",

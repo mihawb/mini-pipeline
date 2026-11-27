@@ -12,7 +12,7 @@
     <div>
         <label for="epm-slider">Events per minute: </label>
         <span id="epm-display">0</span>
-        <input type="range" id="epm-slider" name="epm" min="0" max="100" value="0" 
+        <input type="range" id="epm-slider" name="epm" min="0" max="1000" value="0" 
                hx-post="/update-epm" 
                hx-trigger="input changed delay:300ms"
                hx-target="#epm-display"
