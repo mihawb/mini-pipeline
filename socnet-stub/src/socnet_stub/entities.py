@@ -64,8 +64,8 @@ class Follow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
 
-class Like(Base):
-    __tablename__ = "likes"
+class Rating(Base):
+    __tablename__ = "ratings"
     __table_args__ = (
         UniqueConstraint("user_id", "post_id"),
         {"schema": "activity"},
@@ -78,6 +78,7 @@ class Like(Base):
     post_id: Mapped[int | None] = mapped_column(
         ForeignKey("entities.posts.id", ondelete="CASCADE")
     )
+    rating: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
 

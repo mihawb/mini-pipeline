@@ -31,10 +31,11 @@ CREATE TABLE activity.follows (
     UNIQUE(follower_id, following_id)
 );
 
-CREATE TABLE activity.likes (
+CREATE TABLE activity.ratings (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id INTEGER REFERENCES entities.users(id) ON DELETE CASCADE,
     post_id INTEGER REFERENCES entities.posts(id) ON DELETE CASCADE,
+    rating INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, post_id)
 );

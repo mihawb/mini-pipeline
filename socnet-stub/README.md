@@ -14,7 +14,7 @@ records and inserts them into PostgreSQL at a configurable rate.
   and rate control.
 - `src/socnet_stub/routes.py` - HTTP endpoints and template rendering.
 - `src/socnet_stub/entities.py` - SQLAlchemy models for users, posts, follows,
-  likes, and comments.
+  ratings, and comments.
 - `src/socnet_stub/generation.py` - random entity generators, weighted
   dispatch, and database insert operations with constraint handling.
 - `templates/index.html` - browser-based control console.
@@ -24,11 +24,11 @@ records and inserts them into PostgreSQL at a configurable rate.
 - **Backend:** Python 3.15+, FastAPI, Uvicorn, SQLAlchemy, and psycopg.
 - **Database:** PostgreSQL container, configured through `.env` file.
 - **Frontend:** server-rendered Jinja2 HTML with HTMX for asynchronous updates.
-- Generates random `User`, `Post`, `Follow`, `Like`, and `Comment` entities
+- Generates random `User`, `Post`, `Follow`, `Rating`, and `Comment` entities
   adhering to the database schema.
 - Selects existing user and post IDs from PostgreSQL when generating dependent
   entities.
-- Skips posts, follows, likes, and comments when the required users or posts do
+- Skips posts, follows, ratings, and comments when the required users or posts do
   not exist.
 - Selects one of five generators using configurable weights. The current
   equal-weight configuration gives each generator a 20% chance of selection.
