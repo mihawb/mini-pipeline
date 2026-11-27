@@ -2,7 +2,7 @@ name: mini-pipeline
 
 services:
   postgres:
-    image: postgres:18
+    image: postgres:18-alpine
     container_name: postgres
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -13,6 +13,22 @@ services:
     volumes:
       - ./postgres-init:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    command:
+      - postgres
+      - -c
+      - wal_level=logical
+      - -c
+      - max_wal_senders=10
+      - -c
+      - max_replication_slots=10
 
   socnet-stub:
     build:
@@ -20,7 +36,8 @@ services:
       dockerfile: Containerfile
     container_name: socnet-stub
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
@@ -30,5 +47,87 @@ services:
     ports:
       - "8000:8000"
 
+  kafka:
+    image: apache/kafka:4.4.0
+    container_name: kafka
+    hostname: kafka
+    restart: unless-stopped
+    ports:
+    - "9092:9092"
+    - "9093:9093"
+    environment:
+      # --- KRaft essentials ---
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_NODE_ID: "1"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      # --- Listeners / protocols ---
+      KAFKA_LISTENERS: "PLAINTEXT://:29092,EXTERNAL://:9092,CONTROLLER://:9093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,EXTERNAL://localhost:9092"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      # --- QoL for local dev ---
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    volumes:
+      - kafka_data:/var/lib/kafka/dat
+      - ./bootstrap/create-topics.sh:/create-topics.sh:ro
+    post_start:
+      - command: 
+        - "/bin/sh"
+        - "/create-topics.sh"
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  connect:
+    image: quay.io/debezium/connect:3.7
+    container_name: debezium-kafka-connect
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8083:8083" # Kafka Connect REST API
+    environment:
+      BOOTSTRAP_SERVERS: "kafka:29092"
+      GROUP_ID: "connect-cluster"
+      CONFIG_STORAGE_TOPIC: "connect-configs"
+      OFFSET_STORAGE_TOPIC: "connect-offsets"
+      STATUS_STORAGE_TOPIC: "connect-status"
+      KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_CONFIG_PROVIDERS: "env"
+      CONNECT_CONFIG_PROVIDERS_ENV_CLASS: "org.apache.kafka.common.config.provider.EnvVarConfigProvider"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./bootstrap/register-connector.sh:/register-connector.sh:ro
+      - ./bootstrap/postgres-connector.json:/postgres-connector.json:ro
+    post_start:
+      - command:
+        - "/bin/sh"
+        - "/register-connector.sh"
+    healthcheck:
+      test: 
+        - "CMD-SHELL"
+        - "curl -sf http://localhost:8083/connectors >/dev/null || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
 volumes:
   postgres_data:
+  kafka_data:
