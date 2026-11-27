@@ -87,6 +87,18 @@ services:
       retries: 10
       start_period: 20s
 
+  kafka-ui:
+    image: kafbat/kafka-ui:v1.5.1
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: "local"
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka:29092"
+    depends_on:
+      kafka:
+        condition: service_healthy
+
   connect:
     image: quay.io/debezium/connect:3.7
     container_name: debezium-kafka-connect
